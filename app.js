@@ -56,6 +56,25 @@ app.get('/api/imagesearch/:term', (req, res) => {
       res.json(requiredFields);
       
       //  3. log the search
+      const logEntry = {
+        term: req.params.term,
+        when: new Date()
+      };
+      
+      const lastTenSearches = storage.getItemSync('lastTenSearches');
+      
+      let update;
+      if (!lastTenSearches) {
+        update = [logEntry];
+      }
+      else {
+        // log up to 10 of the last searches
+        const sliceLength = Math.max(lastTenSearches.length, 8);
+        update = [logEntry, ...lastTenSearches.slice(0, sliceLength)]
+      }
+      
+      storage.setItem('lastTenSearches', update);
+      
     }
     else {
       res.send('An error occured when performing the image search!', 500);
